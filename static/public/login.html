@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css"> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="login-form">
+        <h1 class="box" >Login</h1>
+        <form method="post" action="/login" class="login-form">
+            <input type="text" name="email" placeholder="Enter Email" class="textbox" required>
+            <input type="password" name="password" placeholder="Enter Password" class="textbox" required>
+            <button class="box btn">Submit</button>
+        </form>
+    </div>
+    <script>
+       
+        document.getElementsByClassName("login-form")[0].addEventListener("submit",(e)=>{
+            e.preventDefault()
+
+            var data = {
+            "email": "sharmadeepa@gmail.com",
+            "password": "deepa@SH4040"
+            };
+
+            var config = {
+            method: 'post',
+            url: 'http://localhost:3000/login',
+            data : data
+            };
+
+            axios(config)
+            .then(function (response) {
+                console.log(response)
+                document.cookie = "Authorization=" + response.data.token
+            })
+            .catch(function (error) {
+            console.log(error);
+            });
+        });        
+    </script>
+</body>
+</html>
