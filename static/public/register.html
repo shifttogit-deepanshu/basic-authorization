@@ -4,18 +4,47 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.27.2/axios.min.js" integrity="sha512-odNmoc1XJy5x1TMVMdC7EMs3IVdItLPlCeL5vSUPN2llYKMJ2eByTTAIiiuqLg+GdNr9hF6z81p27DArRFKT7A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="../styles.css"> 
     <title>Document</title>
 </head>
 <body>
-    <div class="login-form">
+    <div id="register_form" class="login-form">
         <h1 class="box" >Register</h1>
         <form method="post" action="/register" class="login-form">
-            <input type="text" name="name" placeholder="Enter Name" class="textbox" required>
-            <input type="text" name="email" placeholder="Enter Email" class="textbox" required>
-            <input type="password" name="password" placeholder="Enter Password" class="textbox" required>
+            <input type="text" name="name" placeholder="Enter Name" id="user_name" class="textbox" required>
+            <input type="text" name="email" placeholder="Enter Email" id="user_email" class="textbox" required>
+            <input type="password" name="password" placeholder="Enter Password" id="user_password" class="textbox" required>
             <button class="box btn">Register</button>
         </form>
     </div>
+    <script>
+        let form = document.getElementById("register_form")
+
+        form.addEventListener("submit",(e)=>{
+            e.preventDefault()
+            // console.log(document.getElementById("user_email").value)
+            var data = {
+            "name": document.getElementById("user_name").value,
+            "email": document.getElementById("user_email").value,
+            "password": document.getElementById("user_password").value
+            };
+
+            var config = {
+            method: 'post',
+            url: 'http://localhost:3000/register_user',
+            data : data
+            };
+
+            axios(config)
+            .then(function (response) {
+                document.cookie = "Authorization=" + response.data.token
+                location.reload();
+            })
+            .catch(function (error) {
+            console.log(error);
+            });
+        });        
+    </script>
 </body>
 </html>

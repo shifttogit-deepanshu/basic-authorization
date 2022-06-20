@@ -11,25 +11,25 @@
 <body>
     <div class="login-form">
         <h1 class="box" >Login</h1>
-        <form method="post" action="/login" class="login-form">
-            <input type="text" name="email" placeholder="Enter Email" class="textbox" required>
-            <input type="password" name="password" placeholder="Enter Password" class="textbox" required>
+        <form method="post" action="/login"  class="login-form">
+            <input type="text" name="email" placeholder="Enter Email" id="user_email" class="textbox" required>
+            <input type="password" name="password" placeholder="Enter Password"  id="user_password" class="textbox" required>
             <button class="box btn">Submit</button>
         </form>
     </div>
     <script>
-       
+           
         document.getElementsByClassName("login-form")[0].addEventListener("submit",(e)=>{
             e.preventDefault()
 
             var data = {
-            "email": "sharmadeepa@gmail.com",
-            "password": "deepa@SH4040"
+            "email": document.getElementById("user_email").value,
+            "password": document.getElementById("user_password").value
             };
 
             var config = {
             method: 'post',
-            url: 'http://localhost:3000/login',
+            url: 'http://localhost:3000/login_user',
             data : data
             };
 
@@ -37,6 +37,7 @@
             .then(function (response) {
                 console.log(response)
                 document.cookie = "Authorization=" + response.data.token
+                location.reload();
             })
             .catch(function (error) {
             console.log(error);

@@ -6,14 +6,12 @@ var MongoClient = require('mongodb').MongoClient;
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv").config()
-var cookies = require("cookie-parser");
+var cookies = require("cookie-parser")
 
 const port = 3000
 
 app.use(express.json());
 app.use(cookies());
-// app.use('/public', express.static(path.join(__dirname, '/public')))
-// app.use('/private', express.static(path.join(__dirname, '/private')))
 app.use(express.static(path.join(__dirname, '/static')))
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -24,17 +22,16 @@ MongoClient.connect(url,(err, db)=> {
     let dbauth = db.db("auth");
     let collection = dbauth.collection('user')
 
-    app.post("/register",(req,res)=>{
+    app.post("/register_user",(req,res)=>{
 
       const userName = req.body.name
-      const userEmail = req.body.email;
-      const userPassword = req.body.password;
+      const userEmail = req.body.email
+      const userPassword = req.body.password
 
-      collection.findOne({email:userEmail}, (err, result)=> {
-        if (err) throw err;
-        else if(result){
-          console.log(result.email);
-          console.log('Email already exists');
+      collection.findOne({email:userEmail}).then((result)=> {
+    
+        if(result){
+     
           res.send({error:"Email already exist"})
         }
         else{
@@ -50,14 +47,15 @@ MongoClient.connect(url,(err, db)=> {
                   password:hashedPassword,
                   tokens:[token]
                 }
-                collection.insertOne(user,(err,results)=>{
-                  if (err) throw err;
-                  else if(results){
-                    console.log("User Added Successfully")
+                collection.insertOne(user).then(results=>{
+                    if(results){
+        
                     res.send({result:"User Added Successfully",
                       token
                     })
                   }            
+                }).catch(error=>{
+                  throw error;
                 })
               })
             }
@@ -66,16 +64,14 @@ MongoClient.connect(url,(err, db)=> {
       })
     })
 
-    app.post("/login",(req,res)=>{
+    app.post("/login_user",(req,res)=>{
 
         const userEmail = req.body.email;
         const userPassword = req.body.password;
 
-        collection.findOne({email:userEmail},(err, result)=> {
+        collection.findOne({email:userEmail}).then(result=> {
             if (err) throw err;
-            if(result){
-              console.log(result.email);
-              console.log({error:'Email exists in database'});
+            if(result){         
               
               const dbPassword = result.password
               const tokens = result.tokens
@@ -88,9 +84,7 @@ MongoClient.connect(url,(err, db)=> {
                     }
                     else{
                       let newtokensarray = [...tokens,token]
-                      collection.updateOne({email:userEmail},{$set:{tokens:newtokensarray}}).then(response=>{
-                        console.log(response)
-                        console.log("User Authorized")
+                      collection.updateOne({email:userEmail},{$set:{tokens:newtokensarray}}).then(response=>{                  
                         res.send({result:"User Authorized",token,userEmail})
                       }).catch(e=>{
                         res.send(e)
@@ -99,46 +93,59 @@ MongoClient.connect(url,(err, db)=> {
                   })         
                 }
                 else{
-                  console.log("Invalid password")
+                 
                   res.send({error:"Invalid password"})
                }
               })             
             }
             else{
-              console.log('Invalid Email Id');
+             
               res.send({error:"Invalid Email Id"})
             }
-          });    
+          }).catch(error=>{
+            res.send({error:"Authentication Failed!"})
+          })  
     })
 
     app.get('/',verifyToken,(req,res)=>{ 
 
-      res.sendFile(path.join(__dirname, '/static/private/private.html'))
+      res.sendFile(path.join(__dirname, '/static/public/login.html'))
     
     })
-    
-    function verifyToken(req,res,next){
-      let auth_token = req.cookies.Authorization      
 
-      if(auth_token){
+    app.get('/login',verifyToken,(req,res)=>{ 
+
+      res.sendFile(path.join(__dirname, '/static/public/login.html'))
+    
+    })
+
+    app.get('/register',verifyToken,(req,res)=>{      
+
+      res.sendFile(path.join(__dirname, '/static/public/register.html'))
+    
+    })
+
+    function verifyToken(req,res,next){
+      let auth_token = req.cookies.Authorization     
+
+      try{
+        console.log("auth...........",auth_token)
         jwt.verify(auth_token,  process.env.TOKEN_SECRET, function(err, decoded) {
         collection.findOne({email:decoded.email}).then(result=>{
 
           result.tokens.forEach(element => {
             if(element==auth_token){
-              next()
+              res.sendFile(path.join(__dirname, '/static/private/private.html'))
             }
           });
-
-          res.sendFile(path.join(__dirname, '/static/public/login.html'))
         })
         .catch(e=>{
-          res.sendFile(path.join(__dirname, '/static/public/login.html'))
+          next()
         })
       })  
     }
-    else{
-      res.sendFile(path.join(__dirname, '/static/public/login.html'))
+    catch{
+      next()
     }      
     }
 })
